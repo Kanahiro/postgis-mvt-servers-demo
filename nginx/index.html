@@ -1,0 +1,110 @@
+<html lang="ja">
+    <head>
+        <title>tegola vs martin</title>
+        <script src="https://unpkg.com/maplibre-gl@2.2.0-pre.2/dist/maplibre-gl.js"></script>
+        <link
+            href="https://unpkg.com/maplibre-gl@2.2.0-pre.2/dist/maplibre-gl.css"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div>
+            <input name="style" type="radio" id="tegola" /><label for="tegola"
+                >tegola</label
+            >
+            <input name="style" type="radio" id="martin" checked /><label
+                for="martin"
+                >martin</label
+            >
+            <input name="style" type="radio" id="pg_tileserv" /><label
+                for="pg_tileserv"
+                >pg_tileserv</label
+            >
+        </div>
+        <div id="map" style="height: 95vh"></div>
+        <script>
+            const radioMartin = document.getElementById('martin');
+            const radioTegola = document.getElementById('tegola');
+            const radioPgTileserv = document.getElementById('pg_tileserv');
+            const getStyle = () => {
+                if (radioMartin.checked) {
+                    return {
+                        version: 8,
+                        sources: {
+                            tile: {
+                                type: 'vector',
+                                tiles: [
+                                    'http://localhost:3000/n03_23_230101/{z}/{x}/{y}',
+                                ],
+                            },
+                        },
+                        layers: [
+                            {
+                                id: 'martin-admin',
+                                source: 'tile',
+                                'source-layer': 'n03_23_230101',
+                                type: 'line',
+                            },
+                        ],
+                    };
+                }
+                if (radioTegola.checked) {
+                    return {
+                        version: 8,
+                        sources: {
+                            tile: {
+                                type: 'vector',
+                                tiles: [
+                                    'http://localhost:8080/maps/japan/{z}/{x}/{y}.pbf',
+                                ],
+                            },
+                        },
+                        layers: [
+                            {
+                                id: 'tegola-admin',
+                                source: 'tile',
+                                'source-layer': 'admin',
+                                type: 'line',
+                            },
+                        ],
+                    };
+                }
+                if (radioPgTileserv.checked) {
+                    return {
+                        version: 8,
+                        sources: {
+                            tile: {
+                                type: 'vector',
+                                tiles: [
+                                    'http://localhost:7800/public.n03_23_230101/{z}/{x}/{y}.pbf',
+                                ],
+                            },
+                        },
+                        layers: [
+                            {
+                                id: 'pgtileserv-admin',
+                                source: 'tile',
+                                'source-layer': 'public.n03_23_230101',
+                                type: 'line',
+                            },
+                        ],
+                    };
+                }
+            };
+            const map = new maplibregl.Map({
+                container: 'map',
+                center: [139.7212, 35.73273],
+                zoom: 12,
+                hash: true,
+                style: getStyle(),
+            });
+            const reloadStyle = () => {
+                const style = getStyle();
+                map.setStyle(style);
+            };
+            radioTegola.onchange = reloadStyle;
+            radioMartin.onchange = reloadStyle;
+            radioPgTileserv.onchange = reloadStyle;
+        </script>
+    </body>
+</html>

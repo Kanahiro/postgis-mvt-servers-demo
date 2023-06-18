@@ -1,0 +1,75 @@
+version: '3'
+services:
+  nginx:
+    image: nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx:/usr/share/nginx/html
+    networks:
+      - default
+  postgis:
+    image: kartoza/postgis:15-3
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis-data:/var/lib/postgresql
+      - ./postgres:/usr/src/app
+    networks:
+      - default
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  tegola:
+    image: gospatial/tegola
+    platform: linux/amd64
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgis:
+        condition: service_healthy
+    volumes:
+      - ./tegola:/opt/tegola_config
+    command: --config /opt/tegola_config/config.toml serve
+    networks:
+      - default
+  martin:
+    image: ghcr.io/maplibre/martin
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    depends_on:
+      postgis:
+        condition: service_healthy
+    networks:
+      - default
+    environment:
+      - DATABASE_URL=postgres://docker:docker@postgis/postgres
+  pg_tileserv:
+    image: pramsey/pg_tileserv
+    platform: linux/amd64
+    container_name: pg_tileserv
+    environment:
+      - DATABASE_URL=postgres://docker:docker@postgis/postgres
+    depends_on:
+      postgis:
+        condition: service_healthy
+    networks:
+      - default
+    ports:
+      - 7800:7800
+
+volumes:
+  postgis-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
