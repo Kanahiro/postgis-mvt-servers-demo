@@ -28,7 +28,6 @@ services:
       retries: 5
   tegola:
     image: gospatial/tegola
-    platform: linux/amd64
     ports:
       - "8080:8080"
     depends_on:
@@ -41,7 +40,6 @@ services:
       - default
   martin:
     image: ghcr.io/maplibre/martin
-    platform: linux/amd64
     restart: unless-stopped
     ports:
       - 3000:3000
@@ -54,7 +52,6 @@ services:
       - DATABASE_URL=postgres://docker:docker@postgis/postgres
   pg_tileserv:
     image: pramsey/pg_tileserv
-    platform: linux/amd64
     container_name: pg_tileserv
     environment:
       - DATABASE_URL=postgres://docker:docker@postgis/postgres
